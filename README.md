@@ -55,6 +55,77 @@ The orchestrator instructions are written to be harness-agnostic - adapt the sub
 - Progress tracking and completion reports
 - Context window protection through delegation
 
+## Conductor Server
+
+In addition to the orchestrator agent framework, this repo includes a **Conductor** - a web-based orchestration server that coordinates AI CLI tools to work collaboratively on tasks.
+
+### Quick Start (Conductor)
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the web server
+python run.py server
+
+# Open browser to http://localhost:8200
+```
+
+### Supported AI CLI Tools
+
+The conductor supports multiple AI CLI tools through a harness-agnostic interface:
+
+| Tool | Command | Status |
+|------|---------|--------|
+| Claude Code | `claude` | ✅ Tested |
+| Kiro | `kiro` | ✅ Supported |
+| Gemini CLI | `gemini` | ✅ Supported |
+| Cline | `cline` | ✅ Supported |
+| Aider | `aider` | ✅ Supported |
+| Cursor CLI | `cursor` | ✅ Supported |
+| OpenCode | `opencode` | ✅ Supported |
+| Roo Code | `roo` | ✅ Supported |
+| Amp | `amp` | ✅ Supported |
+| GitHub Copilot | `gh copilot` | ✅ Supported |
+
+### Orchestration Modes
+
+- **Fast Mode** (⚡): Parallel agent execution for quick results
+- **Detailed Mode** (🎭): Sequential 5-phase collaboration with reviews
+
+### Command Line Usage
+
+```bash
+# Run a task with default agent (Claude)
+python run.py task "Create a hello world Python script"
+
+# Use a specific agent
+python run.py task "Build a REST API" --agent kiro --fast
+
+# List available agents
+python run.py agents
+```
+
+### Architecture
+
+```
+llm-conductor/
+├── agents/                 # Agent interface and implementations
+│   ├── base.py            # Abstract agent interface
+│   ├── cli_agent.py       # Generic CLI agent implementation
+│   └── registry.py        # Agent presets and factory
+├── orchestration/         # Orchestration conductors
+│   ├── base_conductor.py  # Base conductor class
+│   ├── collaborative_conductor.py  # Detailed 5-phase workflow
+│   └── fast_conductor.py  # Parallel execution workflow
+├── api/                   # Web server
+│   └── server.py          # FastAPI server with WebSocket support
+├── projects_master/       # Generated project outputs
+└── run.py                 # CLI entry point
+```
+
 ## Attribution
 
 The adversarial review methodology in `REVIEWER_SUBAGENTS.md` was derived from the BMAD-METHOD project's [adversarial review task](https://github.com/bmad-code-org/BMAD-METHOD/blob/main/src/core/tasks/review-adversarial-general.xml).
+
+The conductor components were adapted from the [Multi-LLM-Conductor](https://github.com/Clark-Wallace/Multi-LLM-Conductor) project and genericized to support multiple AI CLI tools.
