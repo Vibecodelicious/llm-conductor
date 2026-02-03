@@ -16,6 +16,7 @@ Tested and compatible with:
 - **Gemini CLI** (Google)
 - **AMP** (Sourcegraph)
 - **Droids** (Factory AI)
+- **OpenCode** (open-source terminal AI)
 
 ## How It Works
 
@@ -85,6 +86,15 @@ tools: all
 (paste ORCHESTRATOR_AGENT.md content here)
 ```
 
+**OpenCode** ([docs](https://opencode.ai/docs/rules/)):
+```markdown
+# Create AGENTS.md in project root with:
+@ORCHESTRATOR_AGENT.md
+
+# Or use opencode.json for multiple instruction files:
+{ "instructions": ["ORCHESTRATOR_AGENT.md"] }
+```
+
 **General approach:**
 Ask the agent to read `ORCHESTRATOR_AGENT.md` as its operating instructions, then provide your project's epic/story definitions.
 
@@ -124,6 +134,7 @@ The orchestrator will launch subagents for development, review, and judgment, ma
 | Gemini CLI | `GEMINI.md` | `./GEMINI.md`, `~/.gemini/GEMINI.md` | [google-gemini.github.io](https://google-gemini.github.io/gemini-cli/docs/cli/gemini-md.html) |
 | AMP | `AGENT.md` | `./AGENT.md`, `.agents/skills/` | [ampcode.com](https://ampcode.com/manual) |
 | Droids | Custom `.md` | `.factory/droids/`, `~/.factory/droids/` | [docs.factory.ai](https://docs.factory.ai/cli/configuration/custom-droids) |
+| OpenCode | `AGENTS.md` | `./AGENTS.md`, `~/.config/opencode/AGENTS.md` | [opencode.ai](https://opencode.ai/docs/rules/) |
 
 ### Subagent Mechanisms
 
@@ -137,6 +148,7 @@ Different platforms have different mechanisms for launching subagents:
 | Gemini CLI | Subprocess calls |
 | AMP | Task delegation |
 | Droids | Droid invocation |
+| OpenCode | Agent sessions |
 
 The orchestrator instructions use generic language that should adapt to your platform's subagent mechanism. If your platform has specific syntax, update the `ORCHESTRATOR_AGENT.md` file accordingly.
 
