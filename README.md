@@ -109,7 +109,7 @@ The orchestrator will launch subagents for development, review, and judgment, ma
 - `ORCHESTRATOR_AGENT.md` - Main orchestrator instructions
 - `DEVELOPER_SUBAGENTS.md` - Developer implementation guidelines
 - `REVIEWER_SUBAGENTS.md` - Adversarial review instructions
-- `REVIEW_JUDGE.md` - Review filtering and approval logic
+- `REVIEW_JUDGE_SUBAGENTS.md` - Review filtering and approval logic
 - `EPICS.example.md` - Example project structure template
 
 ## Platform Reference

@@ -69,7 +69,7 @@ There are placeholders needed by yourself and your sub-agents. Ask the user if t
 - [ORCHESTRATOR_INSTRUCTIONS_PATH] - Path to ORCHESTRATOR_AGENT.md
 - [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH] - Path to DEVELOPER_SUBAGENTS.md
 - [REVIEWER_SUBAGENT_INSTRUCTIONS_PATH] - Path to REVIEWER_SUBAGENTS.md
-- [REVIEW_JUDGE_INSTRUCTIONS_PATH] - Path to REVIEW_JUDGE.md
+- [REVIEW_JUDGE_INSTRUCTIONS_PATH] - Path to REVIEW_JUDGE_SUBAGENTS.md
 
 **Core Project Specification Files:**
 - [PROJECT_CODING_STANDARDS].md - Tech stack, conventions, coding standards
