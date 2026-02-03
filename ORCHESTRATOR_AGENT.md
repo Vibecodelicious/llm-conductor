@@ -72,22 +72,21 @@ There are placeholders needed by yourself and your sub-agents. Ask the user if t
 - [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH] - Path to REVIEW_JUDGE_SUBAGENTS.md
 
 **Core Project Specification Files:**
-- [PROJECT_CODING_STANDARDS].md - Tech stack, conventions, coding standards
-- [PROJECT_EPICS].md - All stories and dependencies
-- [PROJECT_REQUIREMENTS].md - Product/project requirements
-- [PROJECT_ARCHITECTURE].md - Architecture principles and patterns
+- [PROJECT_CODING_STANDARDS_PATH] - Tech stack, conventions, coding standards
+- [PROJECT_EPICS_PATH] - All stories and dependencies
+- [PROJECT_REQUIREMENTS_PATH] - Product/project requirements
+- [PROJECT_ARCHITECTURE_PATH] - Architecture principles and patterns
 
 **Scope & Planning Files:**
-- [PROJECT_ROADMAP].md - What's planned for future versions
-- [PROJECT_FUTURE_FEATURES].md - Features explicitly deferred
+- [PROJECT_ROADMAP_PATH] - What's planned for future versions
+- [PROJECT_FUTURE_FEATURES_PATH] - Features explicitly deferred
 
 **Project-Specific Research (Optional):**
-- [PROJECT_RESEARCH_NOTES].md or similar - Any research documents relevant to the project
-- [Any other project specification files]
+- [PROJECT_RESEARCH_NOTES_PATH] or similar - Any research documents relevant to the project
 
 **Per-Story Files (Filled in Dynamically):**
-- [story context file path] - Story-specific acceptance criteria and requirements (varies by story)
-- [Any research documents relevant to your specific story] - Story-specific research (varies by story)
+- [STORY_CONTEXT_PATH] - Story-specific acceptance criteria and requirements (varies by story)
+- [STORY_RESEARCH_PATH] - Story-specific research (varies by story)
 
 ### Parallel Development Paths
 After foundation epics complete, identify parallel paths:
@@ -231,8 +230,8 @@ YOUR TASK: Implement Story {X.Y} - {Story Name}
 
 Read these files first:
 1. [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH] (your operating instructions)
-2. [story context file path] (story requirements)
-3. [PROJECT_CODING_STANDARDS] (coding standards)
+2. [STORY_CONTEXT_PATH] (story requirements)
+3. [PROJECT_CODING_STANDARDS_PATH] (coding standards)
 
 Implement the story following all acceptance criteria.
 Make commits with format: [Story X.Y] Description
@@ -279,7 +278,7 @@ COMMITS TO REVIEW:
 {list of commit hashes}
 
 STORY CONTEXT:
-[story context file path]
+[STORY_CONTEXT_PATH]
 
 Read [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH], then:
 1. Examine all commits listed above
@@ -315,7 +314,7 @@ REQUIRED READING - Project Specification Files:
 [List your project's specification files here]
 
 STORY CONTEXT:
-[story context file path]
+[STORY_CONTEXT_PATH]
 
 Read [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH], then:
 1. Read all project spec files listed above

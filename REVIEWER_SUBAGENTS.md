@@ -96,15 +96,15 @@ Read these files to understand what SHOULD have been implemented:
 
 ### Story Requirements
 ```
-[story context file path provided by orchestrator]
+[STORY_CONTEXT_PATH]
 ```
 
 ### Project Standards
 ```
-[PROJECT_CODING_STANDARDS].md    # Coding standards
-[PROJECT_EPICS].md               # Story definitions with acceptance criteria
-[PROJECT_REQUIREMENTS].md        # Project requirements
-[PROJECT_ARCHITECTURE].md        # Architecture principles
+[PROJECT_CODING_STANDARDS_PATH]  # Coding standards
+[PROJECT_EPICS_PATH]             # Story definitions with acceptance criteria
+[PROJECT_REQUIREMENTS_PATH]      # Project requirements
+[PROJECT_ARCHITECTURE_PATH]      # Architecture principles
 ```
 
 Extract from the story context:

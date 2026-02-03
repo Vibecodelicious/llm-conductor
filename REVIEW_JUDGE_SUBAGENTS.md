@@ -59,18 +59,17 @@ You MUST read these files to understand the project scope:
 
 ### Project Specification Files
 ```
-[PROJECT_CODING_STANDARDS].md
-[PROJECT_EPICS].md
-[PROJECT_ROADMAP].md
-[PROJECT_FUTURE_FEATURES].md
-[PROJECT_REQUIREMENTS].md
-[PROJECT_ARCHITECTURE].md
-[Any other project specification files]
+[PROJECT_CODING_STANDARDS_PATH]
+[PROJECT_EPICS_PATH]
+[PROJECT_ROADMAP_PATH]
+[PROJECT_FUTURE_FEATURES_PATH]
+[PROJECT_REQUIREMENTS_PATH]
+[PROJECT_ARCHITECTURE_PATH]
 ```
 
 ### Story Context
 ```
-[story context file path provided by orchestrator]
+[STORY_CONTEXT_PATH]
 ```
 
 ---

@@ -121,28 +121,28 @@ Before writing ANY code, read these files in order:
 
 ### Project Specification Files (Required Reading)
 ```
-[PROJECT_CODING_STANDARDS].md     # Tech stack, conventions, coding standards
-[PROJECT_EPICS].md                # All stories and dependencies
-[PROJECT_REQUIREMENTS].md         # Product/project requirements
-[PROJECT_ARCHITECTURE].md         # Architecture principles and patterns
+[PROJECT_CODING_STANDARDS_PATH]   # Tech stack, conventions, coding standards
+[PROJECT_EPICS_PATH]              # All stories and dependencies
+[PROJECT_REQUIREMENTS_PATH]       # Product/project requirements
+[PROJECT_ARCHITECTURE_PATH]       # Architecture principles and patterns
 ```
 
 ### Story-Specific Context (Required Reading)
 ```
-[story context file path provided by orchestrator]
+[STORY_CONTEXT_PATH]
 ```
 The orchestrator will tell you which story to implement. Read that story's context file completely.
 
 ### Scope Awareness (Optional but Recommended)
 ```
-[PROJECT_ROADMAP].md              # What's planned for future versions
-[PROJECT_FUTURE_FEATURES].md      # Features explicitly deferred
+[PROJECT_ROADMAP_PATH]            # What's planned for future versions
+[PROJECT_FUTURE_FEATURES_PATH]    # Features explicitly deferred
 ```
 Reading these helps you avoid accidentally implementing out-of-scope features.
 
 ### Research Documents (Read if Relevant to Your Story)
 ```
-[Any research documents relevant to your specific story]
+[STORY_RESEARCH_PATH]
 ```
 
 ---
@@ -217,7 +217,7 @@ When adding or removing dependencies:
 1. **Commit message MUST include**:
    - Justification: why is this dependency needed?
    - Alternatives considered: what else did you evaluate and why was it rejected?
-2. **Update project tech stack documentation** if the change is architectural (new patterns, major tooling). See [PROJECT_CODING_STANDARDS].md for project-specific requirements.
+2. **Update project tech stack documentation** if the change is architectural (new patterns, major tooling). See [PROJECT_CODING_STANDARDS_PATH] for project-specific requirements.
 3. Example commit message:
    ```
    [Story 1.4] Add pygit2 for Git repository access

@@ -169,10 +169,11 @@ The orchestrator instructions use generic language that should adapt to your pla
 The instruction files use placeholder variables for project-specific paths:
 
 ```
-[PROJECT_CODING_STANDARDS] - Your coding standards document
-[PROJECT_EPICS] - Your epic/story definitions
-[PROJECT_REQUIREMENTS] - Your requirements document
-[PROJECT_ARCHITECTURE] - Your architecture document
+[PROJECT_CODING_STANDARDS_PATH] - Your coding standards document
+[PROJECT_EPICS_PATH] - Your epic/story definitions
+[PROJECT_REQUIREMENTS_PATH] - Your requirements document
+[PROJECT_ARCHITECTURE_PATH] - Your architecture document
+[STORY_CONTEXT_PATH] - Story-specific requirements (varies per story)
 ```
 
 Replace these placeholders with your actual file paths when setting up a project.
