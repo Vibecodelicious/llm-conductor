@@ -10,12 +10,12 @@ This framework is designed to work with any LLM coding agent that supports:
 - **Git operations**
 
 Tested and compatible with:
-- **Claude Code** (claude.ai/code)
+- **Claude Code** (Anthropic)
 - **Kiro** (AWS)
 - **Codex** (OpenAI)
 - **Gemini CLI** (Google)
 - **AMP** (Sourcegraph)
-- **Droids** (and similar agent frameworks)
+- **Droids** (Factory AI)
 
 ## How It Works
 
@@ -39,22 +39,50 @@ Ask an agent to read `ORCHESTRATOR_AGENT.md` and adapt your project plan to some
 
 The method varies by platform:
 
-**Claude Code:**
-```bash
-# Read the instructions directly in your prompt
-cat ORCHESTRATOR_AGENT.md
-# Or reference it in your initial prompt
+**Claude Code** ([docs](https://docs.anthropic.com/en/docs/claude-code/memory)):
+```markdown
+# Add to your CLAUDE.md file (recommended for persistence):
+@ORCHESTRATOR_AGENT.md
+
+# Or ask Claude to read it in conversation:
+"Please read ORCHESTRATOR_AGENT.md as your operating instructions"
 ```
 
-**Kiro:**
-```
-/context add /path/to/ORCHESTRATOR_AGENT.md
+**Kiro** ([docs](https://kiro.dev/docs/steering/)):
+```bash
+# Temporary (per-session):
+/context add ORCHESTRATOR_AGENT.md
+
+# Persistent: Copy to .kiro/steering/ directory
+cp ORCHESTRATOR_AGENT.md .kiro/steering/
 ```
 
-**Codex / Other CLI tools:**
-```bash
-# Include in your system prompt or initial context
-# Most tools support reading files as part of the conversation
+**Codex** ([docs](https://developers.openai.com/codex/guides/agents-md/)):
+```markdown
+# Create AGENTS.md in project root with:
+@ORCHESTRATOR_AGENT.md
+```
+
+**Gemini CLI** ([docs](https://google-gemini.github.io/gemini-cli/docs/cli/gemini-md.html)):
+```markdown
+# Add to GEMINI.md file:
+@ORCHESTRATOR_AGENT.md
+```
+
+**AMP** ([docs](https://ampcode.com/manual)):
+```markdown
+# Add to AGENT.md in project root, or create a skill in .agents/skills/
+```
+
+**Droids** ([docs](https://docs.factory.ai/cli/configuration/custom-droids)):
+```yaml
+# Create .factory/droids/orchestrator.md with YAML frontmatter:
+---
+name: orchestrator
+tools: all
+---
+
+(paste ORCHESTRATOR_AGENT.md content here)
 ```
 
 **General approach:**
@@ -84,9 +112,20 @@ The orchestrator will launch subagents for development, review, and judgment, ma
 - `REVIEW_JUDGE.md` - Review filtering and approval logic
 - `EPICS.example.md` - Example project structure template
 
-## Platform-Specific Notes
+## Platform Reference
 
-### Subagent Invocation
+### Instruction File Locations
+
+| Platform | Instruction File | Persistent Location | Documentation |
+|----------|-----------------|---------------------|---------------|
+| Claude Code | `CLAUDE.md` | `./CLAUDE.md`, `~/.claude/CLAUDE.md` | [docs.anthropic.com](https://docs.anthropic.com/en/docs/claude-code/memory) |
+| Kiro | Steering files | `.kiro/steering/` | [kiro.dev/docs](https://kiro.dev/docs/steering/) |
+| Codex | `AGENTS.md` | `./AGENTS.md`, `~/.codex/AGENTS.md` | [developers.openai.com](https://developers.openai.com/codex/guides/agents-md/) |
+| Gemini CLI | `GEMINI.md` | `./GEMINI.md`, `~/.gemini/GEMINI.md` | [google-gemini.github.io](https://google-gemini.github.io/gemini-cli/docs/cli/gemini-md.html) |
+| AMP | `AGENT.md` | `./AGENT.md`, `.agents/skills/` | [ampcode.com](https://ampcode.com/manual) |
+| Droids | Custom `.md` | `.factory/droids/`, `~/.factory/droids/` | [docs.factory.ai](https://docs.factory.ai/cli/configuration/custom-droids) |
+
+### Subagent Mechanisms
 
 Different platforms have different mechanisms for launching subagents:
 
@@ -97,15 +136,9 @@ Different platforms have different mechanisms for launching subagents:
 | Codex | Agent spawning via API |
 | Gemini CLI | Subprocess calls |
 | AMP | Task delegation |
+| Droids | Droid invocation |
 
 The orchestrator instructions use generic language that should adapt to your platform's subagent mechanism. If your platform has specific syntax, update the `ORCHESTRATOR_AGENT.md` file accordingly.
-
-### Context Persistence
-
-Some platforms support persistent context (instructions that survive session clears):
-- **Kiro**: `/context add` for persistent instructions
-- **Claude Code**: Project-level instructions
-- **Others**: May require re-reading instructions each session
 
 ## Features
 
