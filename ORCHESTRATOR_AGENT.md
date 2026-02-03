@@ -67,9 +67,9 @@ There are placeholders needed by yourself and your sub-agents. Ask the user if t
 
 **Orchestration Instruction Files:**
 - [ORCHESTRATOR_INSTRUCTIONS_PATH] - Path to ORCHESTRATOR_AGENT.md
-- [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH] - Path to DEVELOPER_SUBAGENTS.md
-- [REVIEWER_SUBAGENT_INSTRUCTIONS_PATH] - Path to REVIEWER_SUBAGENTS.md
-- [REVIEW_JUDGE_INSTRUCTIONS_PATH] - Path to REVIEW_JUDGE_SUBAGENTS.md
+- [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH] - Path to DEVELOPER_SUBAGENTS.md
+- [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH] - Path to REVIEWER_SUBAGENTS.md
+- [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH] - Path to REVIEW_JUDGE_SUBAGENTS.md
 
 **Core Project Specification Files:**
 - [PROJECT_CODING_STANDARDS].md - Tech stack, conventions, coding standards
@@ -144,7 +144,7 @@ For each story, execute this loop:
 ```
 1. Select next available story (respecting dependencies)
 2. Launch developer subagent:
-   - Provide the path to [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH]
+   - Provide the path to [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH]
    - Include Story ID and epic (e.g., "Story 1.3 in Epic 1: Foundation")
    - Include story context file path
    - Include any revision context (if iteration > 1)
@@ -161,7 +161,7 @@ IF developer returns BLOCKED report:
 ### Phase 2: Reviewer
 ```
 1. Launch reviewer subagent:
-   - Provide the path to [REVIEWER_SUBAGENT_INSTRUCTIONS_PATH]
+   - Provide the path to [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH]
    - Include Story ID
    - Include list of commits to review
    - Include story context file path
@@ -175,7 +175,7 @@ Only the judge can declare "APPROVED AS-IS" to complete a story.
 ### Phase 3: Judge
 ```
 1. Launch judge subagent:
-   - Provide the path to [REVIEW_JUDGE_INSTRUCTIONS_PATH]
+   - Provide the path to [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH]
    - Include Story ID
    - Include list of commits (so judge can verify issues in code)
    - Include review report from reviewer
@@ -225,12 +225,12 @@ Use your platform's subagent/subprocess mechanism. The key is to provide detaile
 ```
 Subagent prompt:
 ---
-You are a Developer Subagent. Read [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH] for your instructions.
+You are a Developer Subagent. Read [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH] for your instructions.
 
 YOUR TASK: Implement Story {X.Y} - {Story Name}
 
 Read these files first:
-1. [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH] (your operating instructions)
+1. [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH] (your operating instructions)
 2. [story context file path] (story requirements)
 3. [PROJECT_CODING_STANDARDS] (coding standards)
 
@@ -247,7 +247,7 @@ When complete, provide:
 ```
 Subagent prompt:
 ---
-You are a Developer Subagent. Read [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH] for your instructions.
+You are a Developer Subagent. Read [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH] for your instructions.
 
 YOUR TASK: Revise Story {X.Y} - {Story Name} (Iteration {N})
 
@@ -260,7 +260,7 @@ JUDGE'S APPROVED ITEMS:
 IMPORTANT: Only address the APPROVED items above.
 Do NOT implement rejected suggestions.
 
-Read your instructions in [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH], then:
+Read your instructions in [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH], then:
 1. Address each approved item
 2. Make commits for your fixes
 3. Provide a revision report
@@ -271,7 +271,7 @@ Read your instructions in [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH], then:
 ```
 Subagent prompt:
 ---
-You are an Adversarial Code Reviewer. Read [REVIEWER_SUBAGENT_INSTRUCTIONS_PATH] for your instructions.
+You are an Adversarial Code Reviewer. Read [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH] for your instructions.
 
 YOUR TASK: Review Story {X.Y} - {Story Name}
 
@@ -281,7 +281,7 @@ COMMITS TO REVIEW:
 STORY CONTEXT:
 [story context file path]
 
-Read [REVIEWER_SUBAGENT_INSTRUCTIONS_PATH], then:
+Read [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH], then:
 1. Examine all commits listed above
 2. Verify acceptance criteria are met
 3. Find and report any genuine issues
@@ -293,7 +293,7 @@ Read [REVIEWER_SUBAGENT_INSTRUCTIONS_PATH], then:
 ```
 Subagent prompt:
 ---
-You are the Review Judge. Read [REVIEW_JUDGE_INSTRUCTIONS_PATH] for your instructions.
+You are the Review Judge. Read [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH] for your instructions.
 
 YOUR TASK: Evaluate review findings for Story {X.Y}
 
@@ -317,7 +317,7 @@ REQUIRED READING - Project Specification Files:
 STORY CONTEXT:
 [story context file path]
 
-Read [REVIEW_JUDGE_INSTRUCTIONS_PATH], then:
+Read [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH], then:
 1. Read all project spec files listed above
 2. Evaluate each review finding
 3. Approve or reject each item
@@ -387,7 +387,7 @@ If conflicts are detected:
 ```
 1. Create a test branch for the merge attempt
 2. Launch developer subagent:
-   - Include instruction to read [DEVELOPER_SUBAGENT_INSTRUCTIONS_PATH]
+   - Include instruction to read [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH]
    - Task: "Resolve merge conflicts between parallel paths"
    - List of conflicting files
    - List of stories that touched each conflicting file
@@ -402,7 +402,7 @@ If conflicts are detected:
 **Phase 2: Judge (Merge Review)**
 ```
 1. Launch judge subagent:
-   - Include instruction to read [REVIEW_JUDGE_INSTRUCTIONS_PATH]
+   - Include instruction to read [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH]
    - Task: "Evaluate merge conflict resolution"
    - MERGE CONTEXT: This is a merge conflict resolution, NOT a story implementation
    - List of stories involved in the conflict
