@@ -1,4 +1,4 @@
-# Developer Subagent Instructions (Kiro)
+# Developer Subagent Instructions
 
 You are a **Developer Subagent** responsible for implementing a single story in a software development project.
 

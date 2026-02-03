@@ -1,6 +1,21 @@
-# LLM Orchestration System
+# LLM Agent Harness
 
-A multi-agent development framework for managing complex software projects through coordinated subagents and llm-driven reviews. This lets an agent work an a dependency tree of tasks; it reviews its own work in a fresh context to produce more reliable output that requires less effort to review and approve or revise.
+A multi-agent development framework for managing complex software projects through coordinated subagents and LLM-driven reviews. This lets an agent work on a dependency tree of tasks; it reviews its own work in a fresh context to produce more reliable output that requires less effort to review and approve or revise.
+
+## Supported Platforms
+
+This framework is designed to work with any LLM coding agent that supports:
+- **Subagent/subprocess launching** (spawning isolated agent sessions)
+- **File reading and writing**
+- **Git operations**
+
+Tested and compatible with:
+- **Claude Code** (claude.ai/code)
+- **Kiro** (AWS)
+- **Codex** (OpenAI)
+- **Gemini CLI** (Google)
+- **AMP** (Sourcegraph)
+- **Droids** (and similar agent frameworks)
 
 ## How It Works
 
@@ -14,32 +29,83 @@ Each story goes through a develop-review-judge loop (max 5 iterations) until com
 
 ## Getting Started
 
-First, you need some kind of project plan, even if it's just a checklist of tasks. The whole point of this is to push through all the work you have available. Ask an agent to read the ORCHESTRATOR_AGENT_KIRO.md file and then adapt your project plan to something that works with the ORCHESTRATOR_AGENT_KIRO.md instructions.
+### 1. Prepare Your Project Plan
 
-Once the project plan is in-place, start with a relatively low-usage Agent session; either ask the agent to read the ORCHESTRATOR_AGENT_KIRO.md file or even better, in Kiro do this:
+You need some kind of project plan, even if it's just a checklist of tasks. The whole point of this framework is to push through all the work you have available systematically.
 
-```plain
-/context add /wherever/you/placed/ORCHESTRATOR_AGENT_KIRO.md
+Ask an agent to read `ORCHESTRATOR_AGENT.md` and adapt your project plan to something that works with its structure. See `EPICS.example.md` for a template.
+
+### 2. Load the Orchestrator Instructions
+
+The method varies by platform:
+
+**Claude Code:**
+```bash
+# Read the instructions directly in your prompt
+cat ORCHESTRATOR_AGENT.md
+# Or reference it in your initial prompt
 ```
-Now, ask the agent if there's anything else it needs to know to get started orchestrating this project. Once it has everything it needs, just ask it to complete whatever tasks you want (e.g. "complete epics 1-3").
+
+**Kiro:**
+```
+/context add /path/to/ORCHESTRATOR_AGENT.md
+```
+
+**Codex / Other CLI tools:**
+```bash
+# Include in your system prompt or initial context
+# Most tools support reading files as part of the conversation
+```
+
+**General approach:**
+Ask the agent to read `ORCHESTRATOR_AGENT.md` as its operating instructions, then provide your project's epic/story definitions.
+
+### 3. Start the Orchestration
+
+Once the agent has the orchestrator instructions and your project plan, ask it to complete your tasks:
+
+```
+Complete epics 1-3
+```
+
+or
+
+```
+Work through all stories in the project plan
+```
+
+The orchestrator will launch subagents for development, review, and judgment, managing the entire workflow autonomously.
 
 ## Key Files
 
-- `ORCHESTRATOR_AGENT_KIRO.md` - Main orchestrator instructions
-- `DEVELOPER_SUBAGENTS_KIRO.md` - Developer implementation guidelines  
-- `REVIEWER_SUBAGENTS_KIRO.md` - Adversarial review instructions
-- `REVIEW_JUDGE_KIRO.md` - Review filtering and approval logic
+- `ORCHESTRATOR_AGENT.md` - Main orchestrator instructions
+- `DEVELOPER_SUBAGENTS.md` - Developer implementation guidelines
+- `REVIEWER_SUBAGENTS.md` - Adversarial review instructions
+- `REVIEW_JUDGE.md` - Review filtering and approval logic
 - `EPICS.example.md` - Example project structure template
 
-## Usage Tip
+## Platform-Specific Notes
 
-Add the orchestrator instructions to persistent context:
+### Subagent Invocation
 
-```bash
-/context add ORCHESTRATOR_AGENT_KIRO.md
-```
+Different platforms have different mechanisms for launching subagents:
 
-This ensures the agent retains its role after `/clear` commands, avoiding the need to re-read the instruction files.
+| Platform | Subagent Mechanism |
+|----------|-------------------|
+| Claude Code | `Task` tool with subprocess |
+| Kiro | `use_subagent` / `InvokeSubagents` |
+| Codex | Agent spawning via API |
+| Gemini CLI | Subprocess calls |
+| AMP | Task delegation |
+
+The orchestrator instructions use generic language that should adapt to your platform's subagent mechanism. If your platform has specific syntax, update the `ORCHESTRATOR_AGENT.md` file accordingly.
+
+### Context Persistence
+
+Some platforms support persistent context (instructions that survive session clears):
+- **Kiro**: `/context add` for persistent instructions
+- **Claude Code**: Project-level instructions
+- **Others**: May require re-reading instructions each session
 
 ## Features
 
@@ -48,7 +114,21 @@ This ensures the agent retains its role after `/clear` commands, avoiding the ne
 - Story failure handling with escalation
 - Progress tracking and completion reports
 - Context window protection through delegation
+- Adversarial review to catch issues before human review
+
+## Customization
+
+The instruction files use placeholder variables for project-specific paths:
+
+```
+[PROJECT_CODING_STANDARDS] - Your coding standards document
+[PROJECT_EPICS] - Your epic/story definitions
+[PROJECT_REQUIREMENTS] - Your requirements document
+[PROJECT_ARCHITECTURE] - Your architecture document
+```
+
+Replace these placeholders with your actual file paths when setting up a project.
 
 ## Attribution
 
-The adversarial review methodology in `REVIEWER_SUBAGENTS_KIRO.md` was derived from the BMAD-METHOD project's [adversarial review task](https://github.com/bmad-code-org/BMAD-METHOD/blob/main/src/core/tasks/review-adversarial-general.xml).
+The adversarial review methodology in `REVIEWER_SUBAGENTS.md` was derived from the BMAD-METHOD project's [adversarial review task](https://github.com/bmad-code-org/BMAD-METHOD/blob/main/src/core/tasks/review-adversarial-general.xml).
