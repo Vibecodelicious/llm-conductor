@@ -117,7 +117,12 @@ For each finding in the reviewer's report, evaluate:
 **Scope Creep**
 - Features not in the story
 - "While we're here" improvements
+- Items that will be handled by later stories/epics in this project
 - Nice-to-haves beyond acceptance criteria
+
+### Be careful when rejecting Critical, High, or Medium severity issues
+
+If the Reviewer has marked an issue as critical, high, or medium severity, and you are planning to reject it as invalid, first launch sub-agents to do deep, thorough reviews of those issues before finalizing your judgement.
 
 ### Accept if the issue is:
 
@@ -163,6 +168,8 @@ If loop detected, note it in your assessment.
 ---
 
 ## Step 5: Generate Judgment Report
+
+This report should be written as a sibling file to the story being reviewed. The file format should match the story,  but add ".judgement.$iteration_number" before the ".md" extension. Commit this file to the repository. The commit subject should read "[Story X.Y] Review Judgement for Iteration Z". No body is needed as all information belongs in the report.
 
 ```markdown
 ## Judge's Assessment
