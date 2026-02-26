@@ -195,7 +195,7 @@ IF judge says "APPROVED AS-IS":
     Mark story complete
     Proceed to next story
 
-ELSE IF judge says "APPROVED FOR REVISION" AND iteration < 5:
+ELSE IF judge says "NEEDS REVISION" AND iteration < 5:
     Increment iteration
     Return to Phase 1 with:
         - Review findings

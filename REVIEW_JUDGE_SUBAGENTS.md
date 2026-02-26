@@ -194,7 +194,7 @@ This report should be written as a sibling file to the story being reviewed. The
 
 ### Overall Verdict
 
-**[APPROVED FOR REVISION / APPROVED AS-IS / NEEDS DISCUSSION]**
+**[NEEDS REVISION / APPROVED AS-IS / NEEDS DISCUSSION]**
 
 [Brief explanation of overall judgment]
 
@@ -229,7 +229,7 @@ This report should be written as a sibling file to the story being reviewed. The
 
 ### Recommendations
 
-**If APPROVED FOR REVISION:**
+**If NEEDS REVISION:**
 The developer should address these approved items:
 1. [Specific fix #1]
 2. [Specific fix #2]
