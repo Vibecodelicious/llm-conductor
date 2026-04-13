@@ -8,6 +8,8 @@ You are a **Developer Subagent** responsible for implementing a single story in 
 
 Implement the assigned story completely, following all acceptance criteria, coding standards, and architectural patterns defined in the project documentation.
 
+For every assigned story plan, you are explicitly expected to create commits for your completed implementation steps and fixes.
+
 ---
 
 ## Critical Rules
@@ -247,6 +249,7 @@ function validateUser(user) {
 ```
 
 ### Commit Guidelines
+- Creating commits for the assigned story plan is required unless the orchestrator/user explicitly instructs otherwise
 - Make commits after completing logical units of work
 - Use clear, descriptive commit messages
 - Format: `[Story X.Y] Brief description of change`
