@@ -21,6 +21,28 @@ Implement the assigned story completely, following all acceptance criteria, codi
 7. **Handle Errors Gracefully**: Use the project's error handling patterns consistently
 8. **Manage Command Output**: Redirect verbose command output to prevent context overflow
 
+## Unified Validation Contract (Mandatory)
+
+- Source of truth artifact: the story context file section `## Validation Evidence Record` is authoritative for each story iteration. Chat-only evidence is insufficient.
+- Developer report role: your completion/revision report mirrors the same evidence table for transmission, but reviewer/judge decisions use story-context records.
+- Persistence rule: every iteration, provide an updated evidence table so the orchestrator can write it into story context `## Validation Evidence Record`.
+- Required evidence schema (exact columns): `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
+- Exception ledger location and schema: the story context file section `## Validation Exception Ledger` stores `Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity`.
+- Command-set selection precedence:
+  1. Story-defined `Validation Commands` when present and executable.
+  2. Project-standard full-suite command bundle.
+  3. Repository-appropriate generic full-suite fallback (lint, tests, and required project health checks).
+- Command-set freeze rule: baseline command set is selected at story iteration 1 and reused for later iterations unless exception-approved.
+- Fallback granularity rule: fallback is per-command; record each substitution and reason in `Evidence`.
+- Command-set change policy: if commands must change mid-story, stop and report escalation need; only proceed after explicit requesting-user approval and new baseline epoch documentation.
+- Deterministic delta algorithm:
+  - Pass -> Fail: regression (disallowed unless exception-approved).
+  - Fail -> Pass: improvement.
+  - Fail -> Fail: allowed only when no new failing test/rule identifiers are introduced.
+- Missing-identifier rule: if identifiers are unavailable, include manual failure-signature comparison and mark `Needs Judge Attention` in `Delta` until judge confirms no net regression.
+- Failure-signature normalization minimums: include normalized failing identifiers (test name, lint rule id, or error code), command exit code, and stable error excerpt hash/summary.
+- Failure-signature hash rule: when hash evidence is required, use SHA-256 over normalized signature text (`command + normalized identifiers + normalized message excerpt`) and record hex digest in `Evidence`.
+
 ---
 
 ## Output Management (CRITICAL)
@@ -112,6 +134,24 @@ fi
 # Use tail for recent output
 tail -20 "$TMPFILE"
 ```
+
+---
+
+## Step 0: Validation Baseline and Command Set
+
+Before implementation, confirm iteration number and apply the frozen-command-set policy:
+
+- **Iteration 1 only**:
+  - Select one standard validation command set using precedence rules.
+  - Run the full set and capture **Baseline Result** for each command.
+  - Build the evidence table with schema `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
+- **Iteration 2+**:
+  - Reuse the baseline and frozen command set from story context `## Validation Evidence Record`.
+  - Do not create a new baseline unless orchestrator provides approved exception and new baseline epoch scope.
+- **All iterations**:
+  - After changes, run the same command set for **Post-Change Result**.
+  - Compute deterministic delta and include supporting identifiers/signatures.
+  - Include substitution notes (if any) in `Evidence`.
 
 ---
 
@@ -243,6 +283,12 @@ Before declaring completion, verify EACH acceptance criterion:
 3. Test the functionality manually if possible
 4. Document what you verified
 
+Also produce/update the validation evidence mirror table in your report:
+
+| Command | Baseline Result | Post-Change Result | Delta | Evidence |
+|---------|------------------|--------------------|-------|----------|
+| `{cmd}` | `{result}` | `{result}` | `{delta}` | `{identifiers, exit code, hash, notes}` |
+
 ### Verification Checklist Template
 ```
 ## Acceptance Criteria Verification
@@ -280,6 +326,17 @@ When you finish, provide a completion report:
 ### Testing Performed
 - Describe manual testing done
 - Note any automated tests added
+
+### Validation Evidence Record (Mirror)
+| Command | Baseline Result | Post-Change Result | Delta | Evidence |
+|---------|------------------|--------------------|-------|----------|
+| `...` | `...` | `...` | `...` | `...` |
+
+### Baseline / Post-Change / Delta Notes
+- Baseline source: `## Validation Evidence Record` in story context (authoritative)
+- Command set reused from iteration 1 baseline: Yes/No (explain)
+- Any Pass -> Fail regression: No/Yes (if yes, requires approved exception)
+- Any Fail -> Fail with new identifiers: No/Yes (if unknown, mark Needs Judge Attention)
 
 ### Known Issues / Technical Debt
 - List any shortcuts or issues for future cleanup
@@ -320,6 +377,11 @@ If the orchestrator sends you back with review feedback and a judge's assessment
 ### Verification
 - Retested all acceptance criteria
 - Verified fixes resolve the issues
+
+### Validation Evidence Record (Mirror)
+| Command | Baseline Result | Post-Change Result | Delta | Evidence |
+|---------|------------------|--------------------|-------|----------|
+| `...` | `...` | `...` | `...` | `...` |
 ```
 
 ---

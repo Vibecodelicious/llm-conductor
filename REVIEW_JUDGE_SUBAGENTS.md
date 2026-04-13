@@ -28,6 +28,28 @@ Key considerations:
 
 The goal is a **working implementation** that meets requirements, not a perfect system. Pragmatism over perfection.
 
+## Unified Validation Contract (Mandatory)
+
+- Source of truth artifact: the story context file section `## Validation Evidence Record` is authoritative for each story iteration. Chat-only evidence is insufficient.
+- Developer report role: developer completion/revision reports mirror the same evidence table for transmission, but your judgment must rely on story-context records.
+- Required evidence schema (exact columns): `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
+- Exception ledger location and schema: verify exceptions only in story context section `## Validation Exception Ledger`, with fields `Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity`.
+- Command-set selection precedence:
+  1. Story-defined `Validation Commands` when present and executable.
+  2. Project-standard full-suite command bundle.
+  3. Repository-appropriate generic full-suite fallback (lint, tests, and required project health checks).
+- Command-set freeze rule: command set is frozen at story iteration 1 baseline and reused unless exception-approved.
+- Fallback granularity rule: fallback is per-command; substitutions require Evidence notes with reason.
+- Command-set change policy: only explicit requesting-user approval after orchestrator escalation can authorize mid-story command-set changes and a new baseline epoch.
+- Epoch completion gate: approval must enforce no new failures vs active epoch baseline and require approved exception-ledger entries for prior-epoch removed/replaced commands.
+- Deterministic delta algorithm:
+  - Pass -> Fail: regression (disallowed unless exception-approved).
+  - Fail -> Pass: improvement.
+  - Fail -> Fail: allowed only when no new failing test/rule identifiers are introduced.
+- Missing-identifier rule: if identifiers are unavailable, evidence must include manual failure-signature comparison and remain `Needs Judge Attention` until you explicitly rule no net regression.
+- Failure-signature normalization minimums: normalized failing identifiers (test name, lint rule id, or error code), command exit code, and stable error excerpt hash/summary.
+- Failure-signature hash rule: when hash evidence is required, SHA-256 over normalized signature text (`command + normalized identifiers + normalized message excerpt`) with hex digest recorded in `Evidence`.
+
 ---
 
 ## Input You'll Receive
@@ -77,6 +99,13 @@ You MUST read these files to understand the project scope:
 ## Step 2: Review the Review
 
 For each finding in the reviewer's report, evaluate:
+
+Before evaluating reviewer findings, evaluate validation evidence adequacy from story context:
+- Confirm `## Validation Evidence Record` exists and uses exact schema `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
+- Confirm baseline captured at iteration 1 and reused unless approved epoch reset is documented.
+- Confirm post-change results are present for current iteration.
+- Confirm each delta row follows deterministic algorithm and that any `Needs Judge Attention` row is explicitly adjudicated.
+- Confirm any command-set changes/substitutions are supported by `## Validation Exception Ledger` with explicit requesting-user approval citation.
 
 ### A. Is it Valid?
 - Does the issue actually exist in the code?
@@ -190,6 +219,15 @@ This report should be written as a sibling file to the story being reviewed. The
 | REJECTED (out of scope) | X |
 | REJECTED (not valid) | X |
 
+### Validation Evidence Judgment
+
+| Check | Verdict | Evidence |
+|-------|---------|----------|
+| Baseline adequacy (iteration 1 capture + reuse) | PASS/FAIL | [story context reference] |
+| Evidence schema compliance | PASS/FAIL | [table or missing fields] |
+| Delta regression decision | PASS/FAIL/NEEDS_DISCUSSION | [Pass->Fail/Fail->Fail analysis] |
+| Exception ledger sufficiency | PASS/FAIL | [approval citation or gap] |
+
 ---
 
 ### Overall Verdict
@@ -197,6 +235,11 @@ This report should be written as a sibling file to the story being reviewed. The
 **[NEEDS REVISION / APPROVED AS-IS / NEEDS DISCUSSION]**
 
 [Brief explanation of overall judgment]
+
+Regression gate decision:
+- No new failures vs baseline epoch: Yes/No
+- If No, explicit requesting-user exception approval exists: Yes/No
+- Final gating status: PASS/FAIL/NEEDS_DISCUSSION
 
 ---
 
