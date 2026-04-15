@@ -215,7 +215,15 @@ Create either:
 
 Make tasks executable, ordered by dependency, and independently verifiable.
 
-### Phase 6: Worktree Artifact Check and Escalation (Mandatory)
+### Phase 6: Plan Approval and Commit Handoff (Mandatory)
+
+After user approves the plan, commit the plan artifact(s) before orchestration begins.
+
+- Scope: every approved plan document that defines execution scope for the run.
+- Required evidence to record in the plan: approval status, approval citation, plan commit hash, ready-for-orchestration status.
+- Blocking rule: if plan-commit status is unresolved, orchestration start is blocked.
+
+### Phase 7: Worktree Artifact Check and Escalation (Mandatory)
 
 Before implementation begins, run a mandatory overlap check for every planned target file.
 
@@ -262,11 +270,20 @@ Launch a sub-agent (or perform directly with repository evidence) to validate ov
 - Confirm the plan includes a `Worktree Artifact Check` section with overlap outcomes and escalation status.
 - Ensure unresolved overlap escalations are not left pending before implementation starts.
 
+### Validation Step 4: Plan Approval/Commit Closure Check
+
+Validate that plan-commit status is closed before implementation orchestration starts.
+
+- Confirm each active story plan has a completed `Plan Approval and Commit Status` section.
+- Verify `ready-for-orchestration` is affirmative and backed by approval citation plus plan commit hash.
+- Any missing approval/commit evidence blocks orchestration until resolved or explicitly overridden by the user.
+
 ### Iteration Rule
 
 Repeat the validation loop up to 3 iterations, or stop earlier only when the sub-agent confirms no blocking gaps and no unresolved high-impact ambiguity.
 
 The validation loop is not complete while any required worktree artifact escalation remains unresolved.
+The validation loop also blocks orchestration when plan-commit status is unresolved.
 
 ## Unified Validation Contract (Mandatory)
 
@@ -424,10 +441,18 @@ All plans must define one standard validation command set per story and require 
 - Escalation Status: `{none|pending|approved|deferred}`
 - Decision Citation: `{user approval/deferral reference or none}`
 
+## Plan Approval and Commit Status
+
+- Approval Status: `{pending|approved|rejected}`
+- Approval Citation: `{link/quote or none}`
+- Plan Commit Hash: `{commit hash or none}`
+- Ready-for-Orchestration: `{yes|no}`
+
 ## Completion Checklist
 
 - [ ] All acceptance criteria met
 - [ ] Validation commands pass
+- [ ] Plan approved and committed before orchestration begins
 - [ ] User-model ambiguities resolved or escalated
 - [ ] Worktree artifact overlaps resolved (approved direction or explicit deferral)
 ```
@@ -495,10 +520,18 @@ All plans must define one standard validation command set per story and require 
 - Escalation Status: `{none|pending|approved|deferred}`
 - Decision Citation: `{user approval/deferral reference or none}`
 
+## Plan Approval and Commit Status
+
+- Approval Status: `{pending|approved|rejected}`
+- Approval Citation: `{link/quote or none}`
+- Plan Commit Hash: `{commit hash or none}`
+- Ready-for-Orchestration: `{yes|no}`
+
 ## Validation Loop Results
 
 - Missing details check: {result}
 - Ambiguity check: {result}
+- Plan-commit status check: {result}
 - Iterations run: {1-3}
 ```
 

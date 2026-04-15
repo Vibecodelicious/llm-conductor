@@ -188,6 +188,48 @@ Maintain a state tracker with:
 
 For each story, execute this loop:
 
+### Phase -1: Pre-Orchestration Plan-State Gate (Mandatory)
+```
+Before Phase 0/1 begins, resolve the requested plan path(s) and enforce a
+committed-plan gate.
+
+Plan-path resolution rules:
+1. Single-path request:
+   - Use the exact requested path after repository-relative normalization.
+2. Multi-path request:
+   - Normalize and check each requested path independently.
+   - Any non-committed path blocks orchestration for that path.
+3. Implicit request (no plan path provided):
+   - Escalate for plan-path specificity.
+   - Do NOT start orchestration until path(s) are explicitly provided.
+
+Committed-state definition (all conditions required):
+- Path exists in working tree.
+- File is tracked by git.
+- File content exists in HEAD.
+- File has no staged or unstaged diffs relative to HEAD.
+
+Deterministic state handling:
+- `untracked` plan file => escalate and hard-stop for that path.
+- tracked but `modified` (staged or unstaged) => escalate and hard-stop for that path.
+- missing plan path in working tree => escalate and hard-stop for that path.
+- tracked and clean relative to HEAD => eligible to proceed.
+
+Escalation payload requirements (required fields):
+- plan path
+- detected state (`untracked`, `modified`, `missing-path`, or `path-unspecified`)
+- recommended default action: `commit plan first`
+- allowed outcomes:
+  - `commit then continue` (default)
+  - `cancel orchestration`
+  - `explicit one-time override`
+
+Gate semantics:
+- Default is hard-stop until plan is committed and clean.
+- One-time bypass is allowed only with explicit user override citation recorded
+  in the orchestration log for that run.
+```
+
 ### Session Reuse Policy (Development Loop)
 ```
 Definitions:
