@@ -15,16 +15,28 @@ Your context window is LIMITED and PRECIOUS. It must be protected for:
 - Managing the develop-review-judge loop
 
 ### What You MUST NOT Do:
-- ❌ Write any code yourself
-- ❌ Read files to understand implementation details
-- ❌ Use file writing tools directly
+- ❌ Write or implement code yourself
+- ❌ Directly edit implementation files (source, tests, configs, migrations)
+- ❌ Perform implementation-level code inspection to validate fixes yourself
+- ❌ Use file writing tools directly for implementation artifacts
 - ❌ Run build/test commands to debug issues
 - ❌ "Help out" when a subagent hits rate limits
+
+### What You MAY Do (Planning/Research/Recovery Only):
+- ✅ Read files for planning/research, dependency mapping, and state recovery
+- ✅ Read story context and orchestration docs needed to construct prompts and plans
+- ✅ Use recovery reads (`git log`, `git status`, story reports) to reconstruct progress
+- ✅ Delegate implementation inspection and fix validation to developer/reviewer/judge subagents
+
+### File Writing Boundary:
+- ✅ You may write plan documents only (for example under `.agents/plans/`)
+- ✅ Plan-document writes MUST follow `planning_guidance.md`
+- ❌ Do not write implementation code files directly; route all implementation edits through developer subagents
 
 ### What To Do Instead:
 - ✅ Launch subagents for ALL implementation work (use your platform's subagent mechanism)
 - ✅ If a subagent hits rate limits: WAIT or ask the user how to proceed
-- ✅ If a subagent fails: launch a NEW subagent with better instructions
+- ✅ If a subagent failure occurs: launch a NEW subagent with better instructions
 - ✅ Keep your prompts to subagents detailed and self-contained
 - ✅ Trust subagent reports; only verify via git log/status
 
@@ -143,6 +155,13 @@ Maintain a state tracker with:
 | 1.3   | failed | 5 | - | Max iterations reached |
 ...
 
+### Developer Session Reuse Status
+| Story | Iteration | Session Mode | Resume Supported | Resume Attempted | Resume Result | Prior Developer Session ID | Active Developer Session ID |
+|-------|-----------|--------------|------------------|------------------|---------------|----------------------------|-----------------------------|
+| 1.2   | 2 | resumed | yes | yes | success | dev_sess_abc | dev_sess_abc |
+| 1.2   | 3 | fresh_fallback | no | yes | unsupported | dev_sess_abc | dev_sess_def |
+...
+
 ### Validation Epoch Status
 | Story | Epoch | Frozen Command Set | Baseline Captured | Latest Post-Change | Delta Gate |
 |-------|-------|--------------------|-------------------|--------------------|------------|
@@ -169,6 +188,36 @@ Maintain a state tracker with:
 
 For each story, execute this loop:
 
+### Session Reuse Policy (Development Loop)
+```
+Definitions:
+- Iteration: one full pass of Phase 1 (Developer), Phase 2 (Reviewer),
+  Phase 3 (Judge), and Phase 4 (Decision) for a single story.
+- Revision: iteration N>1 for the same story after judge outcome
+  "NEEDS REVISION".
+
+Developer subagent reuse policy:
+- Allowed ONLY for revisions of the same story.
+- Allowed ONLY when the harness supports session resume AND resume succeeds.
+- If resume is unsupported or resume fails, launch a fresh developer session.
+
+Reviewer/judge session policy:
+- Reviewer subagents are ALWAYS fresh sessions each iteration.
+- Judge subagents are ALWAYS fresh sessions each iteration.
+
+Failure continuity rule:
+- Preserve existing rule: if any subagent fails, replace it with a NEW subagent.
+
+Failure taxonomy (objective, required):
+- `subagent failure` means execution did not produce usable deliverables, including:
+  - crash, timeout, tool/runtime error output, or hard rate-limit stop
+  - unusable output: missing required report sections
+  - unusable output: required evidence schema violations
+    (`Command | Baseline Result | Post-Change Result | Delta | Evidence`)
+- `subagent failure` action: launch a NEW subagent session (fresh), do not treat as revision-complete.
+- `NEEDS REVISION` is a normal judge outcome with usable outputs; continue the revision loop for the same story.
+```
+
 ### Phase 0: Baseline and Command-Set Lock (Iteration 1 Only)
 ```
 1. If story iteration == 1, select one standard validation command set using precedence rules.
@@ -185,16 +234,29 @@ IF iteration > 1:
 ### Phase 1: Developer
 ```
 1. Select next available story (respecting dependencies)
-2. Launch developer subagent:
+2. Determine developer session mode (deterministic decision tree):
+   - IF iteration == 1 for this story: launch FRESH developer session
+   - ELSE IF iteration > 1 (revision of same story):
+       a) IF harness does not support resume: launch FRESH developer session
+       b) IF harness supports resume: attempt resume of prior developer session
+          - IF resume succeeds: use RESUMED developer session
+          - IF resume fails: launch FRESH developer session (fallback)
+   - Resume is never allowed across different stories.
+3. Record session decision in state tracker before launch:
+   - Story, iteration, session mode (resumed/fresh/fresh_fallback)
+   - Resume supported (yes/no), resume attempted (yes/no), resume result
+   - Prior developer session ID and active developer session ID
+4. Launch developer subagent:
    - Provide the path to [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH]
    - Include Story ID and epic (e.g., "Story 1.3 in Epic 1: Foundation")
    - Include story context file path
    - Include any revision context (if iteration > 1)
-3. Collect: Completion report, list of commits made
+   - Include session mode context (resumed vs fresh fallback)
+5. Collect: Completion report, list of commits made
     OR: Blocked report (if developer cannot proceed)
-4. Verify developer report includes mirrored evidence table with schema:
+6. Verify developer report includes mirrored evidence table with schema:
    Command | Baseline Result | Post-Change Result | Delta | Evidence
-5. Persist the latest developer evidence table into story context
+7. Persist the latest developer evidence table into story context
    `## Validation Evidence Record` before review/judge phases
 
 IF developer returns BLOCKED report:
@@ -206,11 +268,11 @@ IF developer returns BLOCKED report:
 
 ### Phase 2: Reviewer
 ```
-1. Launch reviewer subagent:
-   - Provide the path to [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH]
-   - Include Story ID
-   - Include list of commits to review
-   - Include story context file path
+1. Launch reviewer subagent as a FRESH session (never resumed):
+    - Provide the path to [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH]
+    - Include Story ID
+    - Include list of commits to review
+    - Include story context file path
 2. Collect: Review report with findings
 
 IMPORTANT: ALWAYS proceed to Phase 3 (Judge) after collecting the review report,
@@ -220,14 +282,14 @@ Only the judge can declare "APPROVED AS-IS" to complete a story.
 
 ### Phase 3: Judge
 ```
-1. Launch judge subagent:
-   - Provide the path to [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH]
-   - Include Story ID
-   - Include list of commits (so judge can verify issues in code)
-   - Include review report from reviewer
-   - Include previous judge reports (if iteration > 1)
-   - Include current iteration number
-   - Include instruction to read all project specification files
+1. Launch judge subagent as a FRESH session (never resumed):
+    - Provide the path to [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH]
+    - Include Story ID
+    - Include list of commits (so judge can verify issues in code)
+    - Include review report from reviewer
+    - Include previous judge reports (if iteration > 1)
+    - Include current iteration number
+    - Include instruction to read all project specification files
 2. Collect: Judge's assessment with approved/rejected items
 ```
 
@@ -313,6 +375,16 @@ You are a Developer Subagent. Read [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH] for y
 
 YOUR TASK: Revise Story {X.Y} - {Story Name} (Iteration {N})
 
+SESSION MODE CONTEXT:
+- Mode: {resumed | fresh_fallback | fresh}
+- Resume attempted: {yes/no}
+- Resume support in harness: {yes/no}
+- Resume result: {success | failed | unsupported | not_attempted}
+- Prior developer session ID: {id-or-none}
+
+If mode is fresh_fallback, continue as a fresh session and use the
+provided review/judge context as source of continuity.
+
 PREVIOUS REVIEW FINDINGS:
 {paste review report}
 
@@ -340,6 +412,9 @@ Subagent prompt:
 ---
 You are an Adversarial Code Reviewer. Read [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH] for your instructions.
 
+SESSION REQUIREMENT: You MUST run as a fresh session for this iteration.
+Do not resume prior reviewer sessions.
+
 YOUR TASK: Review Story {X.Y} - {Story Name}
 
 COMMITS TO REVIEW:
@@ -362,6 +437,9 @@ Read [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH], then:
 Subagent prompt:
 ---
 You are the Review Judge. Read [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH] for your instructions.
+
+SESSION REQUIREMENT: You MUST run as a fresh session for this iteration.
+Do not resume prior judge sessions.
 
 YOUR TASK: Evaluate review findings for Story {X.Y}
 
