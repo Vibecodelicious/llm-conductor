@@ -187,6 +187,12 @@ Use repository evidence and sub-agents where useful.
 - New files to add
 - Routing/API/data/auth patterns if applicable
 
+6. Planned-target inventory (mandatory)
+- Build a deterministic list of planned target files before implementation starts.
+- Primary source: story-plan sections that enumerate target paths (for example, `New Files to Create`, `Files Modified`, or explicit file-path bullets in `Implementation Tasks`).
+- Secondary fallback: `Context References` entries that explicitly identify modification targets.
+- This inventory is the required input for worktree artifact checks.
+
 ### Phase 3: External Research
 
 Use external research when needed for unfamiliar or changing dependencies.
@@ -209,6 +215,28 @@ Create either:
 
 Make tasks executable, ordered by dependency, and independently verifiable.
 
+### Phase 6: Worktree Artifact Check and Escalation (Mandatory)
+
+Before implementation begins, run a mandatory overlap check for every planned target file.
+
+- Artifact classes (must use these exact labels):
+  - `tracked-dirty`: tracked file with staged or unstaged uncommitted modifications.
+  - `existing-untracked`: file exists on disk and is untracked by git.
+- Scope rule: ignored files are out of scope unless they are explicitly listed as planned target files.
+- Escalation trigger: if any planned target file overlaps either artifact class, escalation is mandatory before implementation for that path.
+- Escalation unit: batch by story, with one escalation row per overlapping path.
+- Required escalation payload fields:
+  - `target file`
+  - `artifact class`
+  - `risk summary` (why editing now is unsafe or ambiguous)
+  - `recommended default`
+  - `user decision needed`
+- Blocking rule: unresolved pending escalation blocks implementation for overlapping paths.
+- Timing and ownership:
+  - The planner performs the artifact check during plan validation and records results in the plan.
+  - The implementer re-checks immediately before edits.
+  - If re-check finds overlap without approved direction (or explicit deferral), implementation must stop and escalate.
+
 ## Plan Validation (Mandatory, Non-Optional)
 
 After creating any plan (single-story or epic), run this validation loop.
@@ -226,9 +254,19 @@ Resolve ambiguities by:
 - Updating plan docs with clarifying guidance, or
 - Escalating to the user only when the choice depends on user/business preference.
 
+### Validation Step 3: Worktree Artifact Risk Check
+
+Launch a sub-agent (or perform directly with repository evidence) to validate overlap status for all planned target files.
+
+- Verify each planned target path against worktree artifact classes: `tracked-dirty` and `existing-untracked`.
+- Confirm the plan includes a `Worktree Artifact Check` section with overlap outcomes and escalation status.
+- Ensure unresolved overlap escalations are not left pending before implementation starts.
+
 ### Iteration Rule
 
 Repeat the validation loop up to 3 iterations, or stop earlier only when the sub-agent confirms no blocking gaps and no unresolved high-impact ambiguity.
+
+The validation loop is not complete while any required worktree artifact escalation remains unresolved.
 
 ## Unified Validation Contract (Mandatory)
 
@@ -378,11 +416,20 @@ All plans must define one standard validation command set per story and require 
 |-------|------------------|-------------|--------|-----------------|-------------------|-----------|-----------------|
 | `{story}` | `{iterations/epoch}` | `{frozen command set}` | `{why exception needed}` | `{user name/id}` | `{link/quote}` | `{ISO-8601}` | `{duration/scope}` |
 
+## Worktree Artifact Check
+
+- Checked At: `{ISO-8601}`
+- Planned Target Files: `{path list derived from plan sections}`
+- Overlaps Found (path + class): `{none | path -> tracked-dirty | path -> existing-untracked}`
+- Escalation Status: `{none|pending|approved|deferred}`
+- Decision Citation: `{user approval/deferral reference or none}`
+
 ## Completion Checklist
 
 - [ ] All acceptance criteria met
 - [ ] Validation commands pass
 - [ ] User-model ambiguities resolved or escalated
+- [ ] Worktree artifact overlaps resolved (approved direction or explicit deferral)
 ```
 
 ## Template: Single-Story Plan
@@ -439,6 +486,14 @@ All plans must define one standard validation command set per story and require 
 | Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity |
 |-------|------------------|-------------|--------|-----------------|-------------------|-----------|-----------------|
 | `{story}` | `{iterations/epoch}` | `{frozen command set}` | `{why exception needed}` | `{user name/id}` | `{link/quote}` | `{ISO-8601}` | `{duration/scope}` |
+
+## Worktree Artifact Check
+
+- Checked At: `{ISO-8601}`
+- Planned Target Files: `{path list derived from plan sections}`
+- Overlaps Found (path + class): `{none | path -> tracked-dirty | path -> existing-untracked}`
+- Escalation Status: `{none|pending|approved|deferred}`
+- Decision Citation: `{user approval/deferral reference or none}`
 
 ## Validation Loop Results
 
