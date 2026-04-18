@@ -56,31 +56,6 @@ Coordinate the development of stories across epics by:
 5. Tracking progress, failures, and completion status
 6. Respecting story/epic dependencies
 
-## Unified Validation Contract (Mandatory)
-
-- Source of truth artifact: the story context file section `## Validation Evidence Record` is authoritative for each story iteration. Chat-only evidence is insufficient.
-- Developer report role: developer completion/revision reports mirror the same evidence table for transmission, but reviewer/judge decisions use story-context records.
-- Persistence rule: each iteration, ensure the latest developer evidence table is written to the story context `## Validation Evidence Record`.
-- Required evidence schema (exact columns): `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
-- Exception ledger location and schema: the story context file section `## Validation Exception Ledger` stores `Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity`.
-- Command-set selection precedence:
-  1. Story-defined `Validation Commands` when present and executable.
-  2. Project-standard full-suite command bundle.
-  3. Repository-appropriate generic full-suite fallback (lint, tests, and required project health checks).
-- Command-set freeze rule: choose once at story iteration 1 baseline and reuse across later iterations unless exception-approved.
-- Fallback granularity rule: fallback is per-command; each substitution must be recorded in `Evidence` with reason.
-- Command-set change policy: if command set must change mid-story, escalate and obtain explicit requesting-user approval, then start a new baseline epoch and document reason/scope.
-- Epoch completion gate: completion decisions use the active baseline epoch and require approved exception-ledger entries for each removed/replaced command from prior epochs.
-- Deterministic delta algorithm:
-  - Pass -> Fail: regression (disallowed unless exception-approved).
-  - Fail -> Pass: improvement.
-  - Fail -> Fail: allowed only when no new failing test/rule identifiers are introduced.
-- Missing-identifier rule: if identifiers are unavailable, require manual failure-signature comparison and mark `Needs Judge Attention` until judge confirms no net regression.
-- Failure-signature normalization minimums: include normalized failing identifiers (test name, lint rule id, or error code), command exit code, and stable error excerpt hash/summary.
-- Failure-signature hash rule: when hash evidence is required, use SHA-256 over normalized signature text (`command + normalized identifiers + normalized message excerpt`) and record hex digest in `Evidence`.
-
----
-
 ## Project Structure
 
 ### Epic Dependency Management
@@ -162,13 +137,6 @@ Maintain a state tracker with:
 | 1.2   | 3 | fresh_fallback | no | yes | unsupported | dev_sess_abc | dev_sess_def |
 ...
 
-### Validation Epoch Status
-| Story | Epoch | Frozen Command Set | Baseline Captured | Latest Post-Change | Delta Gate |
-|-------|-------|--------------------|-------------------|--------------------|------------|
-| 1.1   | 1 | {commands} | yes | iteration 1 | pass |
-| 1.2   | 1 | {commands} | yes | iteration 2 | pending |
-...
-
 ### Failure Log
 | Story | Iteration | Reason | Remaining Issues |
 |-------|-----------|--------|------------------|
@@ -190,7 +158,7 @@ For each story, execute this loop:
 
 ### Phase -1: Pre-Orchestration Plan-State Gate (Mandatory)
 ```
-Before Phase 0/1 begins, resolve the requested plan path(s) and enforce a
+Before Phase 1 begins, resolve the requested plan path(s) and enforce a
 committed-plan gate.
 
 Plan-path resolution rules:
@@ -254,23 +222,10 @@ Failure taxonomy (objective, required):
 - `subagent failure` means execution did not produce usable deliverables, including:
   - crash, timeout, tool/runtime error output, or hard rate-limit stop
   - unusable output: missing required report sections
-  - unusable output: required evidence schema violations
-    (`Command | Baseline Result | Post-Change Result | Delta | Evidence`)
+  - unusable output: missing the `### Starting-State and Validation Results` block
+    required by `DEVELOPER_SUBAGENTS.md § Pre-Implementation: Starting-State Check`
 - `subagent failure` action: launch a NEW subagent session (fresh), do not treat as revision-complete.
 - `NEEDS REVISION` is a normal judge outcome with usable outputs; continue the revision loop for the same story.
-```
-
-### Phase 0: Baseline and Command-Set Lock (Iteration 1 Only)
-```
-1. If story iteration == 1, select one standard validation command set using precedence rules.
-2. Run the selected command set before implementation to capture baseline.
-3. Record baseline in story context `## Validation Evidence Record` using schema:
-   Command | Baseline Result | Post-Change Result | Delta | Evidence
-4. Freeze the command set for this story/epoch.
-
-IF iteration > 1:
-    - Reuse frozen command set and existing baseline from story context
-    - Do NOT recapture baseline unless exception-approved epoch reset exists
 ```
 
 ### Phase 1: Developer
@@ -296,10 +251,6 @@ IF iteration > 1:
    - Include session mode context (resumed vs fresh fallback)
 5. Collect: Completion report, list of commits made
     OR: Blocked report (if developer cannot proceed)
-6. Verify developer report includes mirrored evidence table with schema:
-   Command | Baseline Result | Post-Change Result | Delta | Evidence
-7. Persist the latest developer evidence table into story context
-   `## Validation Evidence Record` before review/judge phases
 
 IF developer returns BLOCKED report:
     - Record blocking reason in Story Status
@@ -343,19 +294,8 @@ the judge (Phase 3) first. The judge confirms approval; the reviewer just
 reports findings.
 
 IF judge says "APPROVED AS-IS":
-    Verify no new failures vs active baseline epoch:
-        - No Pass -> Fail deltas unless exception-approved
-        - Fail -> Fail entries include evidence of no new failing identifiers,
-          or are marked Needs Judge Attention and explicitly resolved by judge
-    Verify `## Validation Exception Ledger` contains approved entries for any
-    command-set changes/removals/replacements
-    IF gate passes:
-        Mark story complete
-        Proceed to next story
-    ELSE:
-        Mark story as NEEDS_ESCALATION
-        Record missing approval/evidence in Escalation Log
-        Continue with other available work
+    Mark story complete
+    Proceed to next story
 
 ELSE IF judge says "NEEDS REVISION" AND iteration < 5:
     Increment iteration
@@ -398,11 +338,6 @@ Read these files first:
 Implement the story following all acceptance criteria.
 Make commits with format: [Story X.Y] Description
 
-Validation requirements for this iteration:
-- Use frozen command set from iteration 1 baseline (or capture baseline if iteration 1)
-- Include mirror table with schema: Command | Baseline Result | Post-Change Result | Delta | Evidence
-- Report substitutions, identifiers, exit codes, and hashes in Evidence
-
 When complete, provide:
 - List of all commits made (git log --oneline for your commits)
 - Completion report per DEVELOPER_SUBAGENTS.md
@@ -436,11 +371,6 @@ JUDGE'S APPROVED ITEMS:
 IMPORTANT: Only address the APPROVED items above.
 Do NOT implement rejected suggestions.
 
-Validation requirements for this iteration:
-- Reuse iteration 1 baseline and frozen command set unless exception-approved epoch change is provided
-- Run post-change validation and compute deterministic deltas
-- Include mirror table with schema: Command | Baseline Result | Post-Change Result | Delta | Evidence
-
 Read your instructions in [DEVELOPER_SUBAGENTS_INSTRUCTIONS_PATH], then:
 1. Address each approved item
 2. Make commits for your fixes
@@ -470,7 +400,6 @@ Read [REVIEWER_SUBAGENTS_INSTRUCTIONS_PATH], then:
 2. Verify acceptance criteria are met
 3. Find and report any genuine issues
 4. Generate review report per your instructions
-5. Explicitly validate baseline evidence claims and exception ledger support
 ---
 ```
 
@@ -510,8 +439,7 @@ Read [REVIEW_JUDGE_SUBAGENTS_INSTRUCTIONS_PATH], then:
 2. Evaluate each review finding
 3. Approve or reject each item
 4. Detect any loops/conflicts
-5. Adjudicate baseline evidence adequacy and regression gate
-6. Provide your judgment report
+5. Provide your judgment report
 ---
 ```
 

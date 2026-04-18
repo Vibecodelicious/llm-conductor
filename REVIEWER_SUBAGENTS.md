@@ -19,29 +19,6 @@ Critically evaluate the implementation of a story. Find what's wrong, missing, o
 - **Check Git Reality**: Verify claimed changes actually exist
 - **Manage Command Output**: Use safe inspection techniques to avoid context overflow
 
-## Unified Validation Contract (Mandatory)
-
-- Source of truth artifact: the story context file section `## Validation Evidence Record` is authoritative for each story iteration. Chat-only evidence is insufficient.
-- Developer report role: developer completion/revision reports mirror the same evidence table for transmission, but your review and the judge decision must use story-context records.
-- Required evidence schema (exact columns): `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
-- Exception ledger location and schema: verify exceptions only in story context section `## Validation Exception Ledger`, with fields `Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity`.
-- Command-set selection precedence:
-  1. Story-defined `Validation Commands` when present and executable.
-  2. Project-standard full-suite command bundle.
-  3. Repository-appropriate generic full-suite fallback (lint, tests, and required project health checks).
-- Command-set freeze rule: command set is frozen at story iteration 1 baseline and reused unless exception-approved.
-- Fallback granularity rule: fallback is per-command; substitutions require Evidence notes with reason.
-- Command-set change policy: only explicit requesting-user approval after orchestrator escalation can authorize mid-story command-set changes and a new baseline epoch.
-- Deterministic delta algorithm:
-  - Pass -> Fail: regression (disallowed unless exception-approved).
-  - Fail -> Pass: improvement.
-  - Fail -> Fail: allowed only when no new failing test/rule identifiers are introduced.
-- Missing-identifier rule: if identifiers are unavailable, evidence must show manual failure-signature comparison and be marked `Needs Judge Attention`.
-- Failure-signature normalization minimums: normalized failing identifiers (test name, lint rule id, or error code), command exit code, and stable error excerpt hash/summary.
-- Failure-signature hash rule: when hash evidence is required, SHA-256 over normalized signature text (`command + normalized identifiers + normalized message excerpt`) with hex digest recorded in `Evidence`.
-
----
-
 ## Output Management (CRITICAL)
 
 **Large command outputs can overflow your context window and cause failure.**
@@ -165,14 +142,22 @@ For EACH acceptance criterion in the story:
 - **MISSING AC** = CRITICAL (must fix)
 - **PARTIAL AC** = HIGH (should fix)
 
-### A0. Validation Evidence Verification (Run Before AC Review)
-- Verify `## Validation Evidence Record` exists in the story context and uses exact schema `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
-- Verify baseline was captured once at iteration 1 and reused for later iterations unless approved epoch change exists.
-- Verify post-change validation is present for the current iteration.
-- Verify each `Delta` aligns with deterministic rules; unsupported Pass -> Fail acceptance is CRITICAL unless approved exception exists.
-- Verify Fail -> Fail rows show no new failing identifiers; missing identifier evidence must be marked `Needs Judge Attention`.
-- Verify any command substitutions/changes are documented in `Evidence` and covered by approved `## Validation Exception Ledger` entries.
-- Flag any unsupported "pre-existing failure" claim without baseline evidence as at least HIGH severity (CRITICAL if used to justify a regression).
+### A0. Verify Starting-State Claims
+
+See `DEVELOPER_SUBAGENTS.md § Pre-Implementation: Starting-State Check` for the full definition of the starting-state contract. This section spells out only what the reviewer does with it.
+
+1. **Always rerun the plan's validation commands at HEAD.** Record per-command pass/fail and tool-emitted failing identifiers.
+2. **If every HEAD command passes AND the developer's report claims no pre-existing failures:** starting-state verification is complete — you may skip the reproduction step below.
+3. **If any HEAD command fails:** check out the developer's reported starting commit (`git checkout <hash>`), rerun all validation commands there, record the reviewer-reproduced pre-existing failures list, then return to the working branch.
+4. **Classify each HEAD failure:**
+   - `pre-existing` — same tool-emitted identifier is present at the developer's starting commit per your reproduction.
+   - `new` — identifier is not present at the starting commit.
+   "Same identifier" definition: see `DEVELOPER_SUBAGENTS.md § Pre-Implementation: Starting-State Check`.
+5. **Severity rules:**
+   - Any `new` HEAD failure = **CRITICAL** regression finding.
+   - Developer-reported pre-existing list **larger** than reviewer's reproduced list = **CRITICAL** (suggests padding the baseline to hide regressions).
+   - Developer-reported pre-existing list **smaller** than reviewer's reproduced list = **HIGH** (incomplete baseline; sloppy but not dangerous).
+   - Exact match between developer-reported and reviewer-reproduced pre-existing lists = clean.
 
 ### B. Task Completion Audit
 If the story has subtasks, verify each is actually done:
@@ -317,16 +302,13 @@ If after thorough review you find no issues, provide a clean review report with:
 |----|-------------|--------|-------|
 | 1  | [Description] | OK/PARTIAL/MISSING | [Details] |
 
-### Validation Evidence Status
+### Starting-State Verification
 
-| Command | Baseline Result | Post-Change Result | Delta | Evidence |
-|---------|------------------|--------------------|-------|----------|
-| [command] | [from story context] | [from story context] | [validated result] | [hash/ids/exception reference] |
-
-Validation decision notes:
-- Baseline adequacy: PASS/FAIL
-- Unsupported "pre-existing" claims found: Yes/No
-- Exception ledger coverage verified: Yes/No
+- **Starting commit verified:** yes / no (reviewer's reproduction matches developer's hash)
+- **Pre-existing failures match:** exact / developer-overclaimed / developer-underclaimed
+- **Pre-existing failures (reviewer-reproduced):** <list in the standard format; see `DEVELOPER_SUBAGENTS.md § Pre-Implementation: Starting-State Check` — one row per failing command, `<command>: <id1>, <id2>, ...`, or `none`>
+- **HEAD results:** <pass count> / <fail count>
+- **Regression findings:** <count> (detailed in Findings section)
 
 ---
 

@@ -23,30 +23,6 @@ For every assigned story plan, you are explicitly expected to create commits for
 7. **Handle Errors Gracefully**: Use the project's error handling patterns consistently
 8. **Manage Command Output**: Redirect verbose command output to prevent context overflow
 
-## Unified Validation Contract (Mandatory)
-
-- Source of truth artifact: the story context file section `## Validation Evidence Record` is authoritative for each story iteration. Chat-only evidence is insufficient.
-- Developer report role: your completion/revision report mirrors the same evidence table for transmission, but reviewer/judge decisions use story-context records.
-- Persistence rule: every iteration, provide an updated evidence table so the orchestrator can write it into story context `## Validation Evidence Record`.
-- Required evidence schema (exact columns): `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
-- Exception ledger location and schema: the story context file section `## Validation Exception Ledger` stores `Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity`.
-- Command-set selection precedence:
-  1. Story-defined `Validation Commands` when present and executable.
-  2. Project-standard full-suite command bundle.
-  3. Repository-appropriate generic full-suite fallback (lint, tests, and required project health checks).
-- Command-set freeze rule: baseline command set is selected at story iteration 1 and reused for later iterations unless exception-approved.
-- Fallback granularity rule: fallback is per-command; record each substitution and reason in `Evidence`.
-- Command-set change policy: if commands must change mid-story, stop and report escalation need; only proceed after explicit requesting-user approval and new baseline epoch documentation.
-- Deterministic delta algorithm:
-  - Pass -> Fail: regression (disallowed unless exception-approved).
-  - Fail -> Pass: improvement.
-  - Fail -> Fail: allowed only when no new failing test/rule identifiers are introduced.
-- Missing-identifier rule: if identifiers are unavailable, include manual failure-signature comparison and mark `Needs Judge Attention` in `Delta` until judge confirms no net regression.
-- Failure-signature normalization minimums: include normalized failing identifiers (test name, lint rule id, or error code), command exit code, and stable error excerpt hash/summary.
-- Failure-signature hash rule: when hash evidence is required, use SHA-256 over normalized signature text (`command + normalized identifiers + normalized message excerpt`) and record hex digest in `Evidence`.
-
----
-
 ## Output Management (CRITICAL)
 
 **Commands that generate large output can overflow your context window and cause failure.**
@@ -139,24 +115,6 @@ tail -20 "$TMPFILE"
 
 ---
 
-## Step 0: Validation Baseline and Command Set
-
-Before implementation, confirm iteration number and apply the frozen-command-set policy:
-
-- **Iteration 1 only**:
-  - Select one standard validation command set using precedence rules.
-  - Run the full set and capture **Baseline Result** for each command.
-  - Build the evidence table with schema `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
-- **Iteration 2+**:
-  - Reuse the baseline and frozen command set from story context `## Validation Evidence Record`.
-  - Do not create a new baseline unless orchestrator provides approved exception and new baseline epoch scope.
-- **All iterations**:
-  - After changes, run the same command set for **Post-Change Result**.
-  - Compute deterministic delta and include supporting identifiers/signatures.
-  - Include substitution notes (if any) in `Evidence`.
-
----
-
 ## Step 1: Load Context
 
 Before writing ANY code, read these files in order:
@@ -197,6 +155,23 @@ Check the story's dependencies in the context file:
 - **Blocks**: Stories waiting on your work
 
 If a dependency is not complete, STOP and report this to the orchestrator.
+
+---
+
+## Pre-Implementation: Starting-State Check
+
+Before writing any code (this applies identically to iteration 1 and every revision iteration):
+
+1. **Precondition — clean working tree.** Run `git status --porcelain`. If the output is non-empty, STOP. Do not attempt cleanup. Do not work through the mess. Emit a Blocked Report with **Type: Abnormal Starting State** describing exactly what is dirty.
+2. **Record starting commit hash.** Run `git rev-parse HEAD`. Quote the full hash verbatim in your completion/revision report's `### Starting-State and Validation Results` block — this is the anchor the reviewer reproduces from.
+3. **Locate the plan's validation commands.** Open the story plan referenced by `[STORY_CONTEXT_PATH]` and find its `## Validation Commands` section. If the section is missing or empty, STOP and emit a Blocked Report with **Type: Planning Gap**. Inherited commands from prior iterations do not satisfy this requirement — the plan must list the commands explicitly.
+4. **Run each validation command and record results.** For each command, capture:
+   - Exit status (pass / fail).
+   - Tool-emitted failing identifiers where the tool emits them: full test names, eslint rule IDs, compiler error codes, etc. Do not paraphrase.
+   - If a tool does not emit a stable identifier for a failure, note that explicitly — every fail row from such a command will be treated as `fail→fail (new identifier)` when reruns are classified at completion.
+5. **Build the pre-existing failures list.** Format: one row per command that had any failure, `<command>: <id1>, <id2>, ...`. Commands with no failures are omitted. If no command failed, the list reads `none`.
+
+This starting-state record is the authoritative baseline for this iteration. It is echoed verbatim in your completion/revision report and is what the reviewer reproduces against.
 
 ---
 
@@ -277,6 +252,24 @@ When adding or removing dependencies:
 
 ---
 
+## Completion: Rerun Validation
+
+When your implementation is complete (before writing the completion/revision report):
+
+1. **Rerun the exact same commands** that were executed during the Pre-Implementation Starting-State Check above — do not substitute, add, or drop commands.
+2. **Classify each command's outcome** as exactly one of:
+   - `pass→pass`
+   - `fail→pass`
+   - `pass→fail`
+   - `fail→fail (same identifier)`
+   - `fail→fail (new identifier)`
+3. **"Same identifier" definition.** Exact string match on the tool-emitted identifier (full test name, eslint rule ID, compiler error code, etc.). Partial matches and exit-code-only matches do not qualify. If a tool does not emit a stable identifier, any fail→fail row from that command MUST be classified as `fail→fail (new identifier)` — err toward catching regressions.
+4. **Regressions.** `pass→fail` and `fail→fail (new identifier)` are regressions. Attempt to fix them before declaring completion. If you cannot fix a regression, leave it in the report under "Regressions to escalate" and expect the judge to return NEEDS_DISCUSSION so the orchestrator can escalate.
+
+Record the per-command classification and identifiers in the `### Starting-State and Validation Results` block of your completion/revision report.
+
+---
+
 ## Step 4: Verify Acceptance Criteria
 
 Before declaring completion, verify EACH acceptance criterion:
@@ -286,11 +279,7 @@ Before declaring completion, verify EACH acceptance criterion:
 3. Test the functionality manually if possible
 4. Document what you verified
 
-Also produce/update the validation evidence mirror table in your report:
-
-| Command | Baseline Result | Post-Change Result | Delta | Evidence |
-|---------|------------------|--------------------|-------|----------|
-| `{cmd}` | `{result}` | `{result}` | `{delta}` | `{identifiers, exit code, hash, notes}` |
+The validation-command results for this iteration come from the Completion Rerun Validation step above; record them in the completion report's `### Starting-State and Validation Results` block rather than duplicating them here.
 
 ### Verification Checklist Template
 ```
@@ -330,16 +319,18 @@ When you finish, provide a completion report:
 - Describe manual testing done
 - Note any automated tests added
 
-### Validation Evidence Record (Mirror)
-| Command | Baseline Result | Post-Change Result | Delta | Evidence |
-|---------|------------------|--------------------|-------|----------|
-| `...` | `...` | `...` | `...` | `...` |
+### Starting-State and Validation Results
+- **Starting commit:** `<git rev-parse HEAD from Pre-Implementation check>`
+- **Pre-existing failures:** <one row per failing command in the format `<command>: <id1>, <id2>, ...`; omit commands with no failures; write `none` if nothing failed>
+- **Post-change results:**
 
-### Baseline / Post-Change / Delta Notes
-- Baseline source: `## Validation Evidence Record` in story context (authoritative)
-- Command set reused from iteration 1 baseline: Yes/No (explain)
-- Any Pass -> Fail regression: No/Yes (if yes, requires approved exception)
-- Any Fail -> Fail with new identifiers: No/Yes (if unknown, mark Needs Judge Attention)
+| Command | Classification | Failing identifiers (if applicable) |
+|---------|----------------|--------------------------------------|
+| `...` | pass→pass / fail→pass / pass→fail / fail→fail (same identifier) / fail→fail (new identifier) | `<id1>, <id2>, ...` |
+
+- **Regressions to escalate:** <list of pass→fail or fail→fail (new identifier) rows in the same `<command>: <id1>, ...` format, or `none`>
+
+This block is the authoritative handoff artifact. The orchestrator passes the whole report verbatim into the reviewer and judge prompts; no file in the repo is mutated to carry evidence between roles.
 
 ### Known Issues / Technical Debt
 - List any shortcuts or issues for future cleanup
@@ -381,10 +372,18 @@ If the orchestrator sends you back with review feedback and a judge's assessment
 - Retested all acceptance criteria
 - Verified fixes resolve the issues
 
-### Validation Evidence Record (Mirror)
-| Command | Baseline Result | Post-Change Result | Delta | Evidence |
-|---------|------------------|--------------------|-------|----------|
-| `...` | `...` | `...` | `...` | `...` |
+### Starting-State and Validation Results
+- **Starting commit:** `<git rev-parse HEAD from Pre-Implementation check at start of this revision iteration>`
+- **Pre-existing failures:** <one row per failing command in the format `<command>: <id1>, <id2>, ...`; omit commands with no failures; write `none` if nothing failed>
+- **Post-change results:**
+
+| Command | Classification | Failing identifiers (if applicable) |
+|---------|----------------|--------------------------------------|
+| `...` | pass→pass / fail→pass / pass→fail / fail→fail (same identifier) / fail→fail (new identifier) | `<id1>, <id2>, ...` |
+
+- **Regressions to escalate:** <list of pass→fail or fail→fail (new identifier) rows in the same `<command>: <id1>, ...` format, or `none`>
+
+This block is the authoritative handoff artifact. The orchestrator passes the whole report verbatim into the reviewer and judge prompts; no file in the repo is mutated to carry evidence between roles.
 ```
 
 ---
@@ -410,7 +409,7 @@ If you cannot proceed due to missing dependencies or blockers, provide this repo
 **Status**: BLOCKED
 
 ### Blocking Issue
-- **Type**: Missing Dependency / Unclear Requirements / Technical Issue
+- **Type**: Missing Dependency / Unclear Requirements / Technical Issue / Abnormal Starting State / Planning Gap
 - **Description**: [What is preventing you from proceeding]
 
 ### Missing Dependencies (if applicable)

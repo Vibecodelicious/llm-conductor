@@ -285,31 +285,6 @@ Repeat the validation loop up to 3 iterations, or stop earlier only when the sub
 The validation loop is not complete while any required worktree artifact escalation remains unresolved.
 The validation loop also blocks orchestration when plan-commit status is unresolved.
 
-## Unified Validation Contract (Mandatory)
-
-All plans must define one standard validation command set per story and require baseline/post-change delta evaluation to prevent reward-hacking by unsupported "pre-existing failure" claims.
-
-- Source of truth artifact: the story context file section `## Validation Evidence Record` is authoritative for each story iteration. Chat-only evidence is insufficient.
-- Developer report role: developer completion/revision reports mirror the same evidence table for transmission, but reviewer/judge decisions use story-context records.
-- Persistence rule: each iteration must update `## Validation Evidence Record` in the story context with the latest developer evidence table.
-- Required evidence schema (exact columns): `Command | Baseline Result | Post-Change Result | Delta | Evidence`.
-- Exception ledger location and schema: the story context file section `## Validation Exception Ledger` stores exception entries with fields `Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity`.
-- Command-set selection precedence:
-  1. Story-defined `Validation Commands` when present and executable.
-  2. Project-standard full-suite command bundle.
-  3. Repository-appropriate generic full-suite fallback (lint, tests, and required project health checks).
-- Command-set freeze rule: select once at story iteration 1 baseline; reuse for later iterations unless exception-approved.
-- Fallback granularity rule: fallback is per-command, not all-or-nothing; every substitution records reason in `Evidence`.
-- Command-set change policy: if commands must change mid-story, orchestrator escalates and obtains explicit requesting-user approval, then starts a new baseline epoch and documents reason/scope.
-- Epoch completion gate: completion uses the active epoch baseline and requires approved exception-ledger entries for each removed/replaced command from prior epochs.
-- Deterministic delta algorithm:
-  - Pass -> Fail: regression (disallowed unless exception-approved).
-  - Fail -> Pass: improvement.
-  - Fail -> Fail: allowed only when no new failing test/rule identifiers are introduced.
-- Missing-identifier rule: if identifiers are unavailable, include manual failure-signature comparison and mark `Needs Judge Attention` until judge confirms no net regression.
-- Failure-signature normalization minimums: include normalized failing identifiers (test name, lint rule id, or error code), command exit code, and stable error excerpt hash/summary.
-- Failure-signature hash rule: when hash evidence is required, compute SHA-256 over normalized signature text (`command + normalized identifiers + normalized message excerpt`) and record the hex digest in `Evidence`.
-
 ## Templates
 
 ## Template: Epic
@@ -418,20 +393,10 @@ All plans must define one standard validation command set per story and require 
 
 ## Validation Commands
 
+Every story plan MUST list the validation commands explicitly. These are the source of truth for the developer's Pre-Implementation Starting-State Check and Completion Rerun; no runtime substitution is permitted.
+
 - `{non-interactive command}`
 - `{non-interactive command}`
-
-## Validation Evidence Record
-
-| Command | Baseline Result | Post-Change Result | Delta | Evidence |
-|---------|------------------|--------------------|-------|----------|
-| `{command}` | `{pass/fail + key identifiers}` | `{pass/fail + key identifiers}` | `{pass->pass|fail->fail (same identifiers)|regression (pass->fail)|improvement (fail->pass)|Needs Judge Attention}` | `{exit code, normalized identifiers, fail->fail identifier-comparison evidence when applicable, hash/substitution notes}` |
-
-## Validation Exception Ledger
-
-| Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity |
-|-------|------------------|-------------|--------|-----------------|-------------------|-----------|-----------------|
-| `{story}` | `{iterations/epoch}` | `{frozen command set}` | `{why exception needed}` | `{user name/id}` | `{link/quote}` | `{ISO-8601}` | `{duration/scope}` |
 
 ## Worktree Artifact Check
 
@@ -498,19 +463,9 @@ All plans must define one standard validation command set per story and require 
 
 ## Validation Commands
 
+Every story plan MUST list the validation commands explicitly. These are the source of truth for the developer's Pre-Implementation Starting-State Check and Completion Rerun; no runtime substitution is permitted.
+
 - `{non-interactive command}`
-
-## Validation Evidence Record
-
-| Command | Baseline Result | Post-Change Result | Delta | Evidence |
-|---------|------------------|--------------------|-------|----------|
-| `{command}` | `{pass/fail + key identifiers}` | `{pass/fail + key identifiers}` | `{pass->pass|fail->fail (same identifiers)|regression (pass->fail)|improvement (fail->pass)|Needs Judge Attention}` | `{exit code, normalized identifiers, fail->fail identifier-comparison evidence when applicable, hash/substitution notes}` |
-
-## Validation Exception Ledger
-
-| Story | Iteration Scope | Command Set | Reason | Requesting User | Approval Citation | Timestamp | Expiry/Validity |
-|-------|------------------|-------------|--------|-----------------|-------------------|-----------|-----------------|
-| `{story}` | `{iterations/epoch}` | `{frozen command set}` | `{why exception needed}` | `{user name/id}` | `{link/quote}` | `{ISO-8601}` | `{duration/scope}` |
 
 ## Worktree Artifact Check
 
