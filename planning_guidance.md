@@ -49,6 +49,18 @@ Efficiency matters only when quality and correctness are preserved.
 
 If a decision is ambiguous, resolve it by prioritizing what best protects user outcomes and review quality.
 
+## Core Principle: Semantic Discovery For Host Internals
+
+When a plan requires modifying or hooking host internals that the project does not control, such as minified closed-source bundles, discovery is a semantic analysis task. The durable process is the agent reading the real target, reasoning about the host behavior, documenting the chosen seam, and having that reasoning reviewed.
+
+- Require plans to identify the pinned target artifact or runtime that anchor decisions are based on.
+- Require implementers to explain what behavior each chosen anchor controls, why that behavior is the required seam, why plausible nearby candidates are wrong, and why the anchor is expected to be reasonably stable under expected host changes.
+- Allow temporary scripts, searches, and throwaway analysis tools as aids, but do not treat them as the authority. The authority is the documented reasoning tied to the real target behavior.
+- Synthetic fixtures may test local helper mechanics, but they are not acceptance evidence that a host-internal anchor is correct.
+- Acceptance evidence must come from the pinned target artifact and/or runtime behavior that demonstrates the required user-visible or model-visible effect.
+- Reviewers must reject anchor choices justified only by matching syntax, candidate counts, sentinel insertion, or made-up fixtures.
+- Preserve fail-closed behavior for missing or ambiguous anchors; do not weaken ambiguity thresholds or checks to force a patch through.
+
 ## Core Principle: Prioritize Demoable Progress
 
 When planning milestones, prioritize demoable progress.
