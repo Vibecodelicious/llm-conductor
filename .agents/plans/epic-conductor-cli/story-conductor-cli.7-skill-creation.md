@@ -113,8 +113,8 @@ Every story plan MUST list the validation commands explicitly. These are the sou
 
 - Approval Status: `approved`
 - Approval Citation: User message 2026-05-20 — "Approved. Proceed" (following pass verdicts from both missing-details and ambiguity validation sub-agents on iteration 2)
-- Plan Commit Hash: `pending-commit`
-- Ready-for-Orchestration: `pending-hash`
+- Plan Commit Hash: `b6080b8`
+- Ready-for-Orchestration: `yes`
 
 ## Completion Checklist
 
