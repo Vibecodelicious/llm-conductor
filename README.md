@@ -125,6 +125,23 @@ The orchestrator will launch subagents for development, review, and judgment, ma
 - `REVIEW_JUDGE_SUBAGENTS.md` - Review filtering and approval logic
 - `EPICS.example.md` - Example project structure template
 
+## Bundled Skill: Writing Guidance
+
+`writing_guidance/` is a self-contained documentation skill. It does not depend on the
+orchestration framework and is meant to be used on its own: an agent drafts a document,
+launches fresh reviewer subagents that hunt for reader failure, then revises against
+their findings.
+
+Install it by copying the directory into your agent's skill location and renaming it to
+match the skill name:
+
+```bash
+cp -r writing_guidance ~/.claude/skills/writing-guidance
+```
+
+Read `writing_guidance/SKILL.md` for the loop, the reviewer set, and the subagent launch
+prompt.
+
 ## Platform Reference
 
 ### Instruction File Locations

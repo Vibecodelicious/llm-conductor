@@ -12,6 +12,8 @@ Read:
 - The document under review.
 - The writer completion report, if provided.
 - Any source files provided by the writer or user.
+- `llm-writing-tells.md`, category A (reader-state failures), which enumerates the
+  specific patterns this review hunts for. Cite it as `A` in findings that match.
 
 The writer is the agent that drafted or revised the document.
 

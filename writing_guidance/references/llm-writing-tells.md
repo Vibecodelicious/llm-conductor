@@ -1,46 +1,20 @@
-# Adversarial Documentation Review
+# LLM Writing Tells
 
-You are an adversarial reviewer of a document. Your job is to find places where the document fails its actual reader and report them. You do not rewrite.
+A catalog of patterns that mark LLM-produced prose. It is a shared reference, not a
+reviewer — the Reader-State and LLM-Residue reviewers cite it while doing their own
+jobs. Nothing here is a reviewer role, an output format, or a process to run.
 
-The most common failure mode in LLM-produced writing is **failing to model the reader's mental state.** The writer treats their own working vocabulary, recent context, and project knowledge as shared ground. The reader, walking in cold, gets text that only makes sense if they were standing in the same spot. Most of the patterns flagged below are surface symptoms of that underlying failure. Diagnose audience first; then look for symptoms.
+The underlying failure is almost always the same: **the writer did not model the
+reader's mental state.** The writer treats their own working vocabulary, recent
+context, and project knowledge as shared ground. The reader, walking in cold, gets text
+that only makes sense to someone standing in the same spot. Most patterns below are
+surface symptoms of that. Diagnose the reader failure first, then name the symptom.
 
-## Process (in order)
-
-### Step 1: Identify the audience
-
-Before reviewing anything else, determine who the document is for. The document may or may not say. Where it does not, infer from:
-
-- the document's location (a top-level README, an internal architecture doc, a customer-facing tutorial)
-- the technical assumptions the prose makes (`git clone` assumes one reader; "implement the prune-tool contract" assumes another)
-- the formality and density
-- any audience the document states explicitly
-
-Build a **user gamut**: a list of representative reader types this document is meant to serve. The gamut should be deliberately broad to avoid collapsing the audience to "someone like the author." A typical gamut might include:
-
-- a senior engineer auditing security or architecture
-- a non-developer (PM, designer, hobbyist) who can run copy-paste commands but does not already know `git clone` / `npm install` / equivalents — the docs must teach the moves
-- a developer who knows the terminal but is new to this project
-- a maintainer or contributor who already has full project context
-
-Choose the gamut from the actual evidence, not a default template. If the document targets only a narrow audience, justify that with a quote from the document.
-
-Build a **user-needs gamut**: what each reader type needs from the document. Examples: prerequisites, install commands that work on a clean machine, post-install verification, security disclosure, uninstall procedure, conceptual orientation, troubleshooting, API contract, decision rationale.
-
-### Step 2: Evaluate audience fit
-
-Before scanning for surface tells, ask:
-
-- Does the document serve every reader in the gamut, or only one?
-- Does it teach the moves the least-prepared reader in the gamut needs?
-- Does it state its prerequisites and assumptions explicitly?
-- Does it cover the user-needs gamut, or omit categories?
-- Does the document name local terms, tools, files, and protocols before using them?
-
-Audience-fit failures are the **primary findings**. A document that targets the wrong reader needs structural rework, not line edits. Report these at the top of your output.
-
-### Step 3: Scan for LLM-writing tells
-
-After the audience pass, walk the document looking for the patterns listed below. For each instance, record the location, the category, why it harms a specific reader in the gamut, and the minimal change that would fix it.
+Severity comes from **reader harm, not from category**. A single embedded correction in
+a one-page README aimed at non-developers does more damage than a dozen instances of
+"delve" in an internal engineering memo. Every finding should tie back to a specific
+reader and a specific need that reader has. A pattern listed here that costs the reader
+nothing in context is not a finding — do not report it to fill a quota.
 
 ## The Tells
 
@@ -160,45 +134,8 @@ These directly violate the audience-first principle.
 - "Updated:" markers inside the prose body.
 - Negative definitions where positive ones would work ("This is not a replacement for X" before establishing what it is).
 
-## Output Format
+## Using This Catalog
 
-Produce a single report with this structure.
-
-```
-## Audience Analysis
-
-- Stated audience (if any): <quote, or "none stated">
-- Inferred audience: <your reading, with evidence>
-- User gamut: <list of reader types>
-- User-needs gamut: <list of needs each type has>
-
-## Audience-Fit Findings
-
-For each mismatch:
-- What the document assumes: <quote or paraphrase>
-- Which reader in the gamut is harmed: <reader type>
-- What that reader actually needs: <the gap>
-- Severity: high | medium | low
-- Suggested structural change: <minimal rework, not a line edit>
-
-## Tell Findings
-
-For each instance:
-- Location: <line range or quoted phrase>
-- Category: <letter and name>
-- Audience harm: <which reader is hurt and how>
-- Suggested fix: <minimal change>
-
-## Summary
-
-- Highest-severity findings: <3-5 issues that most damage audience fit>
-- Verdict: <structural rework | line edits | both | clean for stated audience>
-```
-
-## Calibration
-
-Severity is set by **audience harm**, not by a tell's category. A single embedded correction in a one-page README aimed at non-developers can be more damaging than a dozen "delve" instances in an internal memo aimed at engineers. Every finding must tie back to a specific reader in the gamut and a specific need that reader has.
-
-If the document is well-targeted and clean for its actual audience, say so. Do not invent findings to fill quota. A short report that says "audience is correctly served, three minor tells listed below" is a better outcome than a padded review.
-
-Apply the same standards to your own report. Do not commit the tells you are flagging.
+Cite the letter and name (`D. Inflated diction`) so findings are traceable. Report the
+location, the reader harmed, and the smallest change that fixes it. Apply the same
+standards to your own report: do not commit the tells you are flagging.

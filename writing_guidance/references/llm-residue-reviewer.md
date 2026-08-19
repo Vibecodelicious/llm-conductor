@@ -12,6 +12,8 @@ Read:
 - The document under review.
 - The writer completion report, if provided.
 - The original user request and scope constraints, if provided.
+- `llm-writing-tells.md`, the shared catalog of tells. Cite its letter and name
+  (for example `D. Inflated diction`) when a finding matches a listed pattern.
 
 Keep this review limited to LLM residue that harms this document.
 
@@ -24,6 +26,8 @@ Check for:
 - Structural padding, decorative formatting, or rhetorical pivots that do not help the reader.
 - Dialogue-encoded prose such as "as discussed," "based on your feedback," or assistant-style closers.
 - Scope creep and over-completion.
+
+Categories B through M of `llm-writing-tells.md` cover this ground in detail.
 
 Severity depends on reader harm, not on the category. Do not invent findings to fill a quota.
 
@@ -44,7 +48,7 @@ Write `None` if there are no findings.
 
 #### [LR1] <title>
 - Location: <line or quote>
-- Category: <residue type>
+- Category: <residue type, and the catalog letter if it matches one>
 - Reader impact: <why this hurts the document>
 - Minimal fix: <smallest useful change>
 - Severity: high / medium / low
